@@ -1,4 +1,6 @@
-﻿namespace DoctorBooking.CRUD.Models;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+namespace DoctorBooking.CRUD.Db;
 
 public class User
 {
@@ -18,6 +20,7 @@ public class Doctor
     public int UserId { get; set; }
     public string Specialization { get; set; } = null!;
 
+    [ValidateNever]
     public User User { get; set; } = null!;
     public ICollection<Schedule>? Schedules { get; set; }
     public ICollection<Appointment>? Appointments { get; set; }
@@ -29,6 +32,7 @@ public class Patient
     public int UserId { get; set; }
     public DateOnly DateOfBirth { get; set; }
 
+    [ValidateNever]
     public User User { get; set; } = null!; 
     public ICollection<Appointment>? Appointments { get; set; }
 }
@@ -42,6 +46,7 @@ public class Schedule
     public TimeOnly EndTime { get; set; }
     public bool IsAvailable { get; set; }
 
+    [ValidateNever] 
     public Doctor Doctor { get; set; } = null!;
     public ICollection<Appointment>? Appointments { get; set; }
 }
@@ -54,11 +59,12 @@ public class Appointment
     public int ScheduleId { get; set; }
     public DateTime ScheduledTime { get; set; }
     public AppointmentStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
 
+    [ValidateNever]
     public Doctor Doctor { get; set; } = null!;
+    [ValidateNever]
     public Patient Patient { get; set; } = null!;
+    [ValidateNever]
     public Schedule Schedule { get; set; } = null!;
     public ICollection<Payment>? Payments { get; set; }
 }
@@ -71,5 +77,14 @@ public class Payment
     public PaymentStatus Status { get; set; }
     public DateTime PaymentDate { get; set; }
 
+    [ValidateNever]
     public Appointment Appointment { get; set; } = null!;
+}
+
+
+public class ErrorViewModel
+{
+    public string? RequestId { get; set; }
+
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }

@@ -1,0 +1,36 @@
+﻿@model DoctorBooking.CRUD.Db.Payment
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Payment</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.Amount)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.Amount)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.Status)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.Status)</dd>
+
+        <dt class="col-sm-2">Appointment</dt>
+        <dd class="col-sm-10">
+            @(
+                Model.Appointment is not null
+                ? $"{Model.Appointment.Doctor?.User?.Name ?? "Doctor"} {Model.Appointment.Schedule.Date:yyyy-MM-dd} {Model.Appointment.Schedule.StartTime:HH:mm} - {Model.Appointment.Schedule.EndTime:HH:mm}"
+                : ""
+            )
+        </dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.PaymentDate)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.PaymentDate)</dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

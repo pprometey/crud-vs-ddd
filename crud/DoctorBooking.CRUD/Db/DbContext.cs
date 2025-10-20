@@ -1,9 +1,7 @@
-﻿using DoctorBooking.CRUD.Models;
-using Microsoft.EntityFrameworkCore;
-
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace DoctorBooking.CRUD.Db;
-
 
 public class MedicalBookingContext : DbContext
 {
@@ -82,3 +80,16 @@ public class MedicalBookingContext : DbContext
             .HasConversion<int>();
     }
 }
+
+
+//// Design-time DbContext factory for migrations and scaffolding
+//public class MedicalBookingContextFactory : IDesignTimeDbContextFactory<MedicalBookingContext>
+//{
+//    public MedicalBookingContext CreateDbContext(string[] args)
+//    {
+//        var optionsBuilder = new DbContextOptionsBuilder<MedicalBookingContext>();
+//        optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=MedicalBookingDb;Trusted_Connection=True;");
+
+//        return new MedicalBookingContext(optionsBuilder.Options);
+//    }
+//}

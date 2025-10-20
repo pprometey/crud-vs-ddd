@@ -1,7 +1,4 @@
-﻿using DoctorBooking.CRUD.Models;
-
-namespace DoctorBooking.CRUD.Db;
-
+﻿namespace DoctorBooking.CRUD.Db;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +8,7 @@ public static class DbSeeder
     public static void Seed(MedicalBookingContext context)
     {
         if (context.Users.Any())
-            return; // уже засеяно
+            return; 
 
         // --- Пользователи ---
         var user1 = new User { Name = "Доктор Докторович 1", Email = "doctor1@example.com", Phone = "+77000000001", Role = UserRole.Doctor };
@@ -36,7 +33,7 @@ public static class DbSeeder
 
         // --- Записи (appointments) ---
         var apptTime1 = DateTime.Today.AddDays(1).Date.AddHours(9); // tomorrow 09:00
-        var apptTime2 = DateTime.Today.AddDays(1).Date.AddHours(9); // tomorrow 09:00 (у другого доктора)
+        var apptTime2 = DateTime.Today.AddDays(1).Date.AddHours(9); // tomorrow 09:00 
 
         var now = DateTime.UtcNow;
 
@@ -47,9 +44,7 @@ public static class DbSeeder
             Schedule = slot1,
             ScheduledTime = apptTime1,
             Status = AppointmentStatus.Scheduled,
-            CreatedAt = now,
-            UpdatedAt = now,
-            Payments = new List<Payment>() // заполним ниже
+            Payments = new List<Payment>() 
         };
 
         var appointment2 = new Appointment
@@ -59,8 +54,6 @@ public static class DbSeeder
             Schedule = slot3,
             ScheduledTime = apptTime2,
             Status = AppointmentStatus.Scheduled,
-            CreatedAt = now,
-            UpdatedAt = now,
             Payments = new List<Payment>()
         };
 

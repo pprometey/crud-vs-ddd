@@ -1,4 +1,4 @@
-﻿namespace DoctorBooking.CRUD.Models;
+﻿namespace DoctorBooking.CRUD.Db;
 
 public enum UserRole
 {
