@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using DoctorBooking.CRUD.Db;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace DoctorBooking.CRUD.Controllers;
 

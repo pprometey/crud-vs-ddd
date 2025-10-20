@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DoctorBooking.CRUD.Db;
 
 namespace DoctorBooking.CRUD.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly MedicalBookingContext _context;
+        private readonly IUserService _service;
 
-        public UsersController(MedicalBookingContext context)
+        public UsersController(IUserService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            return View(await _service.GetAllAsync());
         }
 
         // GET: Users/Details/5
@@ -32,8 +28,7 @@ namespace DoctorBooking.CRUD.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _service.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -57,8 +52,7 @@ namespace DoctorBooking.CRUD.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
+                await _service.CreateAsync(user);
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
@@ -72,7 +66,7 @@ namespace DoctorBooking.CRUD.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _service.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -96,8 +90,7 @@ namespace DoctorBooking.CRUD.Controllers
             {
                 try
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _service.UpdateAsync(user);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -123,8 +116,7 @@ namespace DoctorBooking.CRUD.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _service.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -138,19 +130,13 @@ namespace DoctorBooking.CRUD.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-            }
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return _service.GetByIdAsync(id).Result != null;
         }
     }
 }

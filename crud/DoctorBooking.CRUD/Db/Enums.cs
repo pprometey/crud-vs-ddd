@@ -3,8 +3,8 @@
 public enum UserRole
 {
     Patient,
-    Doctor, 
-    Admin 
+    Doctor,
+    Admin
 }
 
 public enum AppointmentStatus

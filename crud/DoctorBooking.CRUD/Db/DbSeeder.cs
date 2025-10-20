@@ -8,7 +8,7 @@ public static class DbSeeder
     public static void Seed(MedicalBookingContext context)
     {
         if (context.Users.Any())
-            return; 
+            return;
 
         // --- Пользователи ---
         var user1 = new User { Name = "Доктор Докторович 1", Email = "doctor1@example.com", Phone = "+77000000001", Role = UserRole.Doctor };
@@ -44,7 +44,7 @@ public static class DbSeeder
             Schedule = slot1,
             ScheduledTime = apptTime1,
             Status = AppointmentStatus.Scheduled,
-            Payments = new List<Payment>() 
+            Payments = new List<Payment>()
         };
 
         var appointment2 = new Appointment

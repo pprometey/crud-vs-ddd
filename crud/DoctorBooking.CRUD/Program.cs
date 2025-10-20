@@ -1,6 +1,8 @@
 using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Db.Repositories;
+using DoctorBooking.CRUD.Services;
+using DoctorBooking.CRUD.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,15 @@ builder.Services.AddControllersWithViews();
 // Register EF Core InMemory DB
 builder.Services.AddDbContext<MedicalBookingContext>(options =>
     options.UseInMemoryDatabase("MedicalBookingDb"));
+
+// Register repositories and services
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
 
 // Session (if you use session)
 builder.Services.AddSession(options =>

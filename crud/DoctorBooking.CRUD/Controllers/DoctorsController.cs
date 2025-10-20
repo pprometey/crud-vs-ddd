@@ -1,53 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DoctorBooking.CRUD.Db;
 
 namespace DoctorBooking.CRUD.Controllers
 {
     public class DoctorsController : Controller
     {
-        private readonly MedicalBookingContext _context;
+        private readonly IDoctorService _service;
+        private readonly IUserService _userService;
 
-        public DoctorsController(MedicalBookingContext context)
+        public DoctorsController(IDoctorService service, IUserService userService)
         {
-            _context = context;
+            _service = service;
+            _userService = userService;
         }
 
         // GET: Doctors
         public async Task<IActionResult> Index()
         {
-            var medicalBookingContext = _context.Doctors.Include(d => d.User);
-            return View(await medicalBookingContext.ToListAsync());
+            return View(await _service.GetAllAsync());
         }
 
         // GET: Doctors/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var doctor = await _service.GetByIdAsync(id.Value);
+            if (doctor == null) return NotFound();
             return View(doctor);
         }
 
         // GET: Doctors/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name");
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name");
             return View();
         }
 
@@ -60,29 +48,22 @@ namespace DoctorBooking.CRUD.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(doctor);
-                await _context.SaveChangesAsync();
+                await _service.CreateAsync(doctor);
                 return RedirectToAction(nameof(Index));
             }
-            
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", doctor.UserId);
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", doctor.UserId);
             return View(doctor);
         }
 
         // GET: Doctors/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", doctor.UserId);
+            if (id == null) return NotFound();
+            var doctor = await _service.GetByIdAsync(id.Value);
+            if (doctor == null) return NotFound();
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", doctor.UserId);
             return View(doctor);
         }
 
@@ -93,51 +74,31 @@ namespace DoctorBooking.CRUD.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Specialization")] Doctor doctor)
         {
-            if (id != doctor.Id)
-            {
-                return NotFound();
-            }
-
+            if (id != doctor.Id) return NotFound();
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(doctor);
-                    await _context.SaveChangesAsync();
+                    await _service.UpdateAsync(doctor);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
-                    if (!DoctorExists(doctor.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if ((await _service.GetByIdAsync(doctor.Id)) == null) return NotFound();
+                    throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", doctor.UserId);
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", doctor.UserId);
             return View(doctor);
         }
 
         // GET: Doctors/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var doctor = await _service.GetByIdAsync(id.Value);
+            if (doctor == null) return NotFound();
             return View(doctor);
         }
 
@@ -146,19 +107,8 @@ namespace DoctorBooking.CRUD.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor != null)
-            {
-                _context.Doctors.Remove(doctor);
-            }
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool DoctorExists(int id)
-        {
-            return _context.Doctors.Any(e => e.Id == id);
         }
     }
 }

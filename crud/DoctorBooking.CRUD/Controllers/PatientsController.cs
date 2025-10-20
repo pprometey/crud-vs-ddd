@@ -1,142 +1,100 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DoctorBooking.CRUD.Db;
 
 namespace DoctorBooking.CRUD.Controllers
 {
     public class PatientsController : Controller
     {
-        private readonly MedicalBookingContext _context;
+        private readonly IPatientService _service;
+        private readonly IUserService _userService;
 
-        public PatientsController(MedicalBookingContext context)
+        public PatientsController(IPatientService service, IUserService userService)
         {
-            _context = context;
+            _service = service;
+            _userService = userService;
         }
 
         // GET: Patients
         public async Task<IActionResult> Index()
         {
-            var medicalBookingContext = _context.Patients.Include(p => p.User);
-            return View(await medicalBookingContext.ToListAsync());
+            return View(await _service.GetAllAsync());
         }
 
         // GET: Patients/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var patient = await _context.Patients
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (patient == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var patient = await _service.GetByIdAsync(id.Value);
+            if (patient == null) return NotFound();
             return View(patient);
         }
 
         // GET: Patients/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name");
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name");
             return View();
         }
 
         // POST: Patients/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserId,DateOfBirth")] Patient patient)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(patient);
-                await _context.SaveChangesAsync();
+                await _service.CreateAsync(patient);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", patient.UserId);
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", patient.UserId);
             return View(patient);
         }
 
         // GET: Patients/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient == null)
-            {
-                return NotFound();
-            }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", patient.UserId);
+            if (id == null) return NotFound();
+            var patient = await _service.GetByIdAsync(id.Value);
+            if (patient == null) return NotFound();
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", patient.UserId);
             return View(patient);
         }
 
         // POST: Patients/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,DateOfBirth")] Patient patient)
         {
-            if (id != patient.Id)
-            {
-                return NotFound();
-            }
-
+            if (id != patient.Id) return NotFound();
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(patient);
-                    await _context.SaveChangesAsync();
+                    await _service.UpdateAsync(patient);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
-                    if (!PatientExists(patient.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if ((await _service.GetByIdAsync(patient.Id)) == null) return NotFound();
+                    throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Name", patient.UserId);
+            var users = await _userService.GetAllAsync();
+            ViewData["UserId"] = new SelectList(users.Select(u => new { u.Id, u.Name }), "Id", "Name", patient.UserId);
             return View(patient);
         }
 
         // GET: Patients/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var patient = await _context.Patients
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (patient == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var patient = await _service.GetByIdAsync(id.Value);
+            if (patient == null) return NotFound();
             return View(patient);
         }
 
@@ -145,19 +103,8 @@ namespace DoctorBooking.CRUD.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var patient = await _context.Patients.FindAsync(id);
-            if (patient != null)
-            {
-                _context.Patients.Remove(patient);
-            }
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PatientExists(int id)
-        {
-            return _context.Patients.Any(e => e.Id == id);
         }
     }
 }

@@ -1,165 +1,100 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DoctorBooking.CRUD.Db;
 
 namespace DoctorBooking.CRUD.Controllers
 {
     public class SchedulesController : Controller
     {
-        private readonly MedicalBookingContext _context;
+        private readonly IScheduleService _service;
+        private readonly IDoctorService _doctorService;
 
-        public SchedulesController(MedicalBookingContext context)
+        public SchedulesController(IScheduleService service, IDoctorService doctorService)
         {
-            _context = context;
+            _service = service;
+            _doctorService = doctorService;
         }
 
         // GET: Schedules
         public async Task<IActionResult> Index()
         {
-            var medicalBookingContext = _context.Schedules
-                .Include(s => s.Doctor)
-                    .ThenInclude(d => d.User);
-            return View(await medicalBookingContext.ToListAsync());
+            return View(await _service.GetAllAsync());
         }
 
         // GET: Schedules/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var schedule = await _context.Schedules
-                .Include(s => s.Doctor)
-                    .ThenInclude(d => d.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (schedule == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var schedule = await _service.GetByIdAsync(id.Value);
+            if (schedule == null) return NotFound();
             return View(schedule);
         }
 
         // GET: Schedules/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var doctors = _context.Doctors
-                .Include(d => d.User)
-                .Select(d => new { d.Id, Name = d.User.Name })
-                .ToList();
-            ViewData["DoctorId"] = new SelectList(doctors, "Id", "Name");
+            var doctors = await _doctorService.GetAllAsync();
+            ViewData["DoctorId"] = new SelectList(doctors.Select(d => new { d.Id, Name = d.User?.Name ?? string.Empty }), "Id", "Name");
             return View();
         }
 
         // POST: Schedules/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,DoctorId,Date,StartTime,EndTime,IsAvailable")] Schedule schedule)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(schedule);
-                await _context.SaveChangesAsync();
+                await _service.CreateAsync(schedule);
                 return RedirectToAction(nameof(Index));
             }
-
-            var doctors = _context.Doctors
-                .Include(d => d.User)
-                .Select(d => new { d.Id, Name = d.User.Name })
-                .ToList();
-            ViewData["DoctorId"] = new SelectList(doctors, "Id", "Name", schedule.DoctorId);
+            var doctors = await _doctorService.GetAllAsync();
+            ViewData["DoctorId"] = new SelectList(doctors.Select(d => new { d.Id, Name = d.User?.Name ?? string.Empty }), "Id", "Name", schedule.DoctorId);
             return View(schedule);
         }
 
         // GET: Schedules/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var schedule = await _context.Schedules.FindAsync(id);
-            if (schedule == null)
-            {
-                return NotFound();
-            }
-
-            var doctors = _context.Doctors
-                .Include(d => d.User)
-                .Select(d => new { d.Id, Name = d.User.Name })
-                .ToList();
-            ViewData["DoctorId"] = new SelectList(doctors, "Id", "Name", schedule.DoctorId);
+            if (id == null) return NotFound();
+            var schedule = await _service.GetByIdAsync(id.Value);
+            if (schedule == null) return NotFound();
+            var doctors = await _doctorService.GetAllAsync();
+            ViewData["DoctorId"] = new SelectList(doctors.Select(d => new { d.Id, Name = d.User?.Name ?? string.Empty }), "Id", "Name", schedule.DoctorId);
             return View(schedule);
         }
 
         // POST: Schedules/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,DoctorId,Date,StartTime,EndTime,IsAvailable")] Schedule schedule)
         {
-            if (id != schedule.Id)
-            {
-                return NotFound();
-            }
-
+            if (id != schedule.Id) return NotFound();
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(schedule);
-                    await _context.SaveChangesAsync();
+                    await _service.UpdateAsync(schedule);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
-                    if (!ScheduleExists(schedule.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if ((await _service.GetByIdAsync(schedule.Id)) == null) return NotFound();
+                    throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-
-            var doctors = _context.Doctors
-                .Include(d => d.User)
-                .Select(d => new { d.Id, Name = d.User.Name })
-                .ToList();
-            ViewData["DoctorId"] = new SelectList(doctors, "Id", "Name", schedule.DoctorId);
+            var doctors = await _doctorService.GetAllAsync();
+            ViewData["DoctorId"] = new SelectList(doctors.Select(d => new { d.Id, Name = d.User?.Name ?? string.Empty }), "Id", "Name", schedule.DoctorId);
             return View(schedule);
         }
 
         // GET: Schedules/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var schedule = await _context.Schedules
-                .Include(s => s.Doctor)
-                    .ThenInclude(d => d.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (schedule == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var schedule = await _service.GetByIdAsync(id.Value);
+            if (schedule == null) return NotFound();
             return View(schedule);
         }
 
@@ -168,19 +103,8 @@ namespace DoctorBooking.CRUD.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var schedule = await _context.Schedules.FindAsync(id);
-            if (schedule != null)
-            {
-                _context.Schedules.Remove(schedule);
-            }
-
-            await _context.SaveChangesAsync();
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ScheduleExists(int id)
-        {
-            return _context.Schedules.Any(e => e.Id == id);
         }
     }
 }

@@ -33,7 +33,7 @@ public class Patient
     public DateOnly DateOfBirth { get; set; }
 
     [ValidateNever]
-    public User User { get; set; } = null!; 
+    public User User { get; set; } = null!;
     public ICollection<Appointment>? Appointments { get; set; }
 }
 
@@ -46,7 +46,7 @@ public class Schedule
     public TimeOnly EndTime { get; set; }
     public bool IsAvailable { get; set; }
 
-    [ValidateNever] 
+    [ValidateNever]
     public Doctor Doctor { get; set; } = null!;
     public ICollection<Appointment>? Appointments { get; set; }
 }
