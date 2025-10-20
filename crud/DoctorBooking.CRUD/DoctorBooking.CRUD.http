@@ -1,6 +1,3 @@
 @DoctorBooking.CRUD_HostAddress = http://localhost:5131
 
-GET {{DoctorBooking.CRUD_HostAddress}}/weatherforecast/
-Accept: application/json
-
 ###
