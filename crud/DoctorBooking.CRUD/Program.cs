@@ -21,6 +21,7 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IPaymentOrchestrationService, PaymentOrchestrationService>();
 
 // Session (if you use session)
 builder.Services.AddSession(options =>

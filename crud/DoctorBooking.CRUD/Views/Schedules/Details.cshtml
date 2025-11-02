@@ -11,36 +11,23 @@
     <h4>Schedule</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EndTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsAvailable)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsAvailable)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Doctor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Doctor.User.Name)
-        </dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.Date)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.Date)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.StartTime)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.StartTime)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.EndTime)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.EndTime)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.Price)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.Price)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.IsBusy)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(m => m.IsBusy)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(m => m.Doctor)</dt>
+        <dd class="col-sm-10">@(Model.Doctor?.User?.Name ?? Model.Doctor?.Id.ToString() ?? "")</dd>
     </dl>
 </div>
 <div>

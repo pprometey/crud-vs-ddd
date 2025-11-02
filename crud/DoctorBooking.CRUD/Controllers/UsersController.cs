@@ -48,7 +48,7 @@ namespace DoctorBooking.CRUD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email,Phone,Role")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Name,Email,Phone")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -79,7 +79,7 @@ namespace DoctorBooking.CRUD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Phone,Role")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Phone")] User user)
         {
             if (id != user.Id)
             {

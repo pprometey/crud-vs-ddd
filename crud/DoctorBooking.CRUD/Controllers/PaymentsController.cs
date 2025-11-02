@@ -8,10 +8,12 @@ namespace DoctorBooking.CRUD.Controllers
     public class PaymentsController : Controller
     {
         private readonly IPaymentService _service;
+        private readonly IAppointmentService _appointmentService;
 
-        public PaymentsController(IPaymentService service)
+        public PaymentsController(IPaymentService service, IAppointmentService appointmentService)
         {
             _service = service;
+            _appointmentService = appointmentService;
         }
 
         // GET: Payments
@@ -32,11 +34,19 @@ namespace DoctorBooking.CRUD.Controllers
         }
 
         // GET: Payments/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            // Service will provide ViewData in controller in real app; keep simple here.
-            var appointments = new List<SelectListItem>();
-            ViewData["AppointmentId"] = new SelectList(appointments, "Value", "Text");
+            var appointments = await _appointmentService.GetAllAsync();
+            ViewData["AppointmentId"] = new SelectList(
+                appointments.Select(a => new
+                {
+                    a.Id,
+                    Name = $"{a.Doctor?.User?.Name ?? "Doctor"} {a.Schedule.Date:yyyy-MM-dd} {a.Schedule.StartTime:HH:mm} - {a.Schedule.EndTime:HH:mm}"
+                }),
+                "Id",
+                "Name"
+            );
+
             return View();
         }
 
@@ -50,6 +60,20 @@ namespace DoctorBooking.CRUD.Controllers
                 await _service.CreateAsync(payment);
                 return RedirectToAction(nameof(Index));
             }
+
+            // repopulate appointments select if validation fails
+            var appointments = await _appointmentService.GetAllAsync();
+            ViewData["AppointmentId"] = new SelectList(
+                appointments.Select(a => new
+                {
+                    a.Id,
+                    Name = $"{a.Doctor?.User?.Name ?? "Doctor"} {a.Schedule.Date:yyyy-MM-dd} {a.Schedule.StartTime:HH:mm} - {a.Schedule.EndTime:HH:mm}"
+                }),
+                "Id",
+                "Name",
+                payment.AppointmentId
+            );
+
             return View(payment);
         }
 
@@ -59,6 +83,19 @@ namespace DoctorBooking.CRUD.Controllers
             if (id == null) return NotFound();
             var payment = await _service.GetByIdAsync(id.Value);
             if (payment == null) return NotFound();
+
+            var appointments = await _appointmentService.GetAllAsync();
+            ViewData["AppointmentId"] = new SelectList(
+                appointments.Select(a => new
+                {
+                    a.Id,
+                    Name = $"{a.Doctor?.User?.Name ?? "Doctor"} {a.Schedule.Date:yyyy-MM-dd} {a.Schedule.StartTime:HH:mm} - {a.Schedule.EndTime:HH:mm}"
+                }),
+                "Id",
+                "Name",
+                payment.AppointmentId
+            );
+
             return View(payment);
         }
 
@@ -73,6 +110,20 @@ namespace DoctorBooking.CRUD.Controllers
                 await _service.UpdateAsync(payment);
                 return RedirectToAction(nameof(Index));
             }
+
+            // repopulate appointments select if validation fails
+            var appointments = await _appointmentService.GetAllAsync();
+            ViewData["AppointmentId"] = new SelectList(
+                appointments.Select(a => new
+                {
+                    a.Id,
+                    Name = $"{a.Doctor?.User?.Name ?? "Doctor"} {a.Schedule.Date:yyyy-MM-dd} {a.Schedule.StartTime:HH:mm} - {a.Schedule.EndTime:HH:mm}"
+                }),
+                "Id",
+                "Name",
+                payment.AppointmentId
+            );
+
             return View(payment);
         }
 

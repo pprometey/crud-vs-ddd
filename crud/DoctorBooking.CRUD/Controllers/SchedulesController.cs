@@ -1,7 +1,7 @@
-﻿using DoctorBooking.CRUD.Db;
-using DoctorBooking.CRUD.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using DoctorBooking.CRUD.Db;
+using DoctorBooking.CRUD.Services.Interfaces;
 
 namespace DoctorBooking.CRUD.Controllers
 {
@@ -42,7 +42,7 @@ namespace DoctorBooking.CRUD.Controllers
         // POST: Schedules/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,DoctorId,Date,StartTime,EndTime,IsAvailable")] Schedule schedule)
+        public async Task<IActionResult> Create([Bind("Id,DoctorId,Date,StartTime,EndTime,IsBusy,Price")] Schedule schedule)
         {
             if (ModelState.IsValid)
             {
@@ -68,7 +68,7 @@ namespace DoctorBooking.CRUD.Controllers
         // POST: Schedules/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,DoctorId,Date,StartTime,EndTime,IsAvailable")] Schedule schedule)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,DoctorId,Date,StartTime,EndTime,IsBusy,Price")] Schedule schedule)
         {
             if (id != schedule.Id) return NotFound();
             if (ModelState.IsValid)

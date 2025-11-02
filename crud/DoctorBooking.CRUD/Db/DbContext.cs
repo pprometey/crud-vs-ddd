@@ -65,11 +65,6 @@ public class MedicalBookingContext : DbContext
             .WithOne(p => p.Appointment)
             .HasForeignKey(p => p.AppointmentId);
 
-        // Enum mapping (store as int)
-        modelBuilder.Entity<User>()
-            .Property(u => u.Role)
-            .HasConversion<int>();
-
         modelBuilder.Entity<Appointment>()
             .Property(a => a.Status)
             .HasConversion<int>();
@@ -81,7 +76,7 @@ public class MedicalBookingContext : DbContext
 }
 
 
-//// Design-time DbContext factory for migrations and scaffolding
+// Design-time DbContext factory for migrations and scaffolding
 //public class MedicalBookingContextFactory : IDesignTimeDbContextFactory<MedicalBookingContext>
 //{
 //    public MedicalBookingContext CreateDbContext(string[] args)

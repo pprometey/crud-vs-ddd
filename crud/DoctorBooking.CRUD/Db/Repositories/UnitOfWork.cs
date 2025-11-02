@@ -1,3 +1,7 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 namespace DoctorBooking.CRUD.Db.Repositories;
 
 public class UnitOfWork : IUnitOfWork
@@ -25,6 +29,24 @@ public class UnitOfWork : IUnitOfWork
     public async Task<int> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync();
+    }
+
+    public async Task ExecuteInTransactionAsync(Func<Task> action)
+    {
+        // InMemory provider doesn't support transactions. Keep the transactional code visible (commented)
+        // so it can be restored for real DB providers, but run the action without transactions to avoid errors.
+
+        // await using var tx = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await action();
+        //    await tx.CommitAsync();
+        }
+        catch
+        {
+        //    await tx.RollbackAsync();
+            throw;
+        }
     }
 
     public void Dispose()

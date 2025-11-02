@@ -8,7 +8,6 @@ public class User
     public string Name { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string Phone { get; set; } = null!;
-    public UserRole Role { get; set; }
 
     public ICollection<Doctor>? Doctors { get; set; }
     public ICollection<Patient>? Patients { get; set; }
@@ -44,7 +43,10 @@ public class Schedule
     public DateOnly Date { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
-    public bool IsAvailable { get; set; }
+
+    public bool IsBusy { get; set; }
+
+    public decimal Price { get; set; }
 
     [ValidateNever]
     public Doctor Doctor { get; set; } = null!;
@@ -88,3 +90,4 @@ public class ErrorViewModel
 
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }
+
