@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="xml:space" use="optional" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Appointment -->
+  <data name="appointment.patient_is_own_doctor" xml:space="preserve">
+    <value>Пациент не может быть своим собственным врачом.</value>
+  </data>
+  <data name="appointment.payment_not_allowed" xml:space="preserve">
+    <value>Оплата невозможна: запись находится в статусе «{0}».</value>
+  </data>
+  <data name="appointment.payment_exceeds_slot_price" xml:space="preserve">
+    <value>Платёж {0} превысит стоимость слота {1}. Остаток: {2}.</value>
+  </data>
+  <data name="appointment.cannot_cancel" xml:space="preserve">
+    <value>Нельзя отменить запись в статусе «{0}».</value>
+  </data>
+  <data name="appointment.already_started" xml:space="preserve">
+    <value>Нельзя отменить запись после её начала.</value>
+  </data>
+  <data name="appointment.not_confirmed_for_complete" xml:space="preserve">
+    <value>Завершить можно только подтверждённую запись. Текущий статус: «{0}».</value>
+  </data>
+  <data name="appointment.not_confirmed_for_no_show" xml:space="preserve">
+    <value>Отметить неявку можно только у подтверждённой записи. Текущий статус: «{0}».</value>
+  </data>
+  <data name="appointment.free_confirm_with_price" xml:space="preserve">
+    <value>ConfirmFree применим только для бесплатных записей.</value>
+  </data>
+  <data name="appointment.free_confirm_wrong_status" xml:space="preserve">
+    <value>Нельзя подтвердить бесплатную запись из статуса «{0}».</value>
+  </data>
+
+  <!-- Money / Payment -->
+  <data name="money.negative" xml:space="preserve">
+    <value>Сумма не может быть отрицательной.</value>
+  </data>
+  <data name="money.subtraction_negative" xml:space="preserve">
+    <value>Результат вычитания не может быть отрицательным: {0} - {1}.</value>
+  </data>
+  <data name="money.payment_amount_zero" xml:space="preserve">
+    <value>Сумма платежа должна быть положительной (больше нуля).</value>
+  </data>
+</root>

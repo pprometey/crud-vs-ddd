@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="xml:space" use="optional" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Appointment -->
+  <data name="appointment.patient_is_own_doctor" xml:space="preserve">
+    <value>Patient cannot be their own doctor.</value>
+  </data>
+  <data name="appointment.payment_not_allowed" xml:space="preserve">
+    <value>Payments are not allowed when appointment is in '{0}' status.</value>
+  </data>
+  <data name="appointment.payment_exceeds_slot_price" xml:space="preserve">
+    <value>Payment of {0} would exceed slot price {1}. Remaining: {2}.</value>
+  </data>
+  <data name="appointment.cannot_cancel" xml:space="preserve">
+    <value>Cannot cancel appointment in '{0}' status.</value>
+  </data>
+  <data name="appointment.already_started" xml:space="preserve">
+    <value>Cannot cancel an appointment after it has started.</value>
+  </data>
+  <data name="appointment.not_confirmed_for_complete" xml:space="preserve">
+    <value>Only confirmed appointments can be completed. Current status: '{0}'.</value>
+  </data>
+  <data name="appointment.not_confirmed_for_no_show" xml:space="preserve">
+    <value>Only confirmed appointments can be marked as no-show. Current status: '{0}'.</value>
+  </data>
+  <data name="appointment.free_confirm_with_price" xml:space="preserve">
+    <value>ConfirmFree is only valid for appointments with zero price.</value>
+  </data>
+  <data name="appointment.free_confirm_wrong_status" xml:space="preserve">
+    <value>Cannot confirm a free appointment from status '{0}'.</value>
+  </data>
+
+  <!-- Money / Payment -->
+  <data name="money.negative" xml:space="preserve">
+    <value>Money amount cannot be negative.</value>
+  </data>
+  <data name="money.subtraction_negative" xml:space="preserve">
+    <value>Subtraction result cannot be negative: {0} - {1}.</value>
+  </data>
+  <data name="money.payment_amount_zero" xml:space="preserve">
+    <value>Payment amount must be positive (greater than zero).</value>
+  </data>
+</root>

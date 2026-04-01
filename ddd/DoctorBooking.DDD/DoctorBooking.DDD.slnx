@@ -1,0 +1,13 @@
+<Solution>
+  <Project Path="Core.Common.Domain/Core.Common.Domain.csproj" />
+  <Project Path="Core.Common.Application/Core.Common.Application.csproj" />
+  <Project Path="Core.Common.Infrastructure/Core.Common.Infrastructure.csproj" />
+  <Project Path="DoctorBooking.DDD.Domain/DoctorBooking.DDD.Domain.csproj" />
+  <Project Path="DoctorBooking.DDD.Domain.Tests/DoctorBooking.DDD.Domain.Tests.csproj" />
+  <Project Path="DoctorBooking.DDD.AppHost/DoctorBooking.DDD.AppHost.csproj" />
+  <Project Path="DoctorBooking.DDD.Api/DoctorBooking.DDD.Api.csproj" />
+  <Project Path="frontend/frontend.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

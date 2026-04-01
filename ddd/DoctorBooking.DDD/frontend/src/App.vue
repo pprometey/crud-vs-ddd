@@ -1,0 +1,3 @@
+<template>
+    Doctor Booking
+</template>
