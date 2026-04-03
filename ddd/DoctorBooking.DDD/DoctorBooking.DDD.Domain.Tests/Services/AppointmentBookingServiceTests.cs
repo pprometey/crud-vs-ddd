@@ -1,6 +1,5 @@
 using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Appointments;
-using DoctorBooking.DDD.Domain.Appointments.Events;
 using DoctorBooking.DDD.Domain.Schedules;
 using DoctorBooking.DDD.Domain.Services;
 using DoctorBooking.DDD.Domain.Tests.Fakes;
@@ -15,7 +14,7 @@ public class AppointmentBookingServiceTests
     private static readonly DateTime FutureSlotStart = Now.AddDays(3);
     private static readonly TimeSpan OneHour = TimeSpan.FromHours(1);
 
-    private (AppointmentBookingService service,
+    private static (AppointmentBookingService service,
              FakeScheduleRepository scheduleRepo,
              FakeAppointmentRepository appointmentRepo,
              FakeUserRepository userRepo,
@@ -146,7 +145,7 @@ public class AppointmentBookingServiceTests
 
         // First patient books and pays → slot becomes CONFIRMED
         var existing = new AppointmentAgg(AppointmentId.New(), slot.Id, patient1Id, doctorId, FutureSlotStart, new Money(100));
-        existing.AddPayment(new Money(100), Now);
+        existing.AddPayment(PaymentId.New(), new Money(100), Now);
         appointmentRepo.Save(existing);
 
         Assert.Throws<DomainException>(() => service.Book(patient2Id, slot.Id));
@@ -173,22 +172,6 @@ public class AppointmentBookingServiceTests
     }
 
     [Fact]
-    public void Book_ValidRequest_RegistersAppointmentCreatedEvent()
-    {
-        var (service, scheduleRepo, _, userRepo, _) = CreateSut();
-
-        var patientId = UserId.New();
-        var doctorId = UserId.New();
-        userRepo.Save(CreatePatient(patientId));
-        var (_, slot) = CreateScheduleWithSlot(scheduleRepo, doctorId);
-
-        var appointment = service.Book(patientId, slot.Id);
-        var events = appointment.PopDomainEvents();
-
-        Assert.Contains(events, e => e is AppointmentCreated);
-    }
-
-    [Fact]
     public void Book_FreeSlot_AppointmentImmediatelyConfirmed()
     {
         var (service, scheduleRepo, _, userRepo, _) = CreateSut();
@@ -201,23 +184,6 @@ public class AppointmentBookingServiceTests
         var appointment = service.Book(patientId, slot.Id);
 
         Assert.Equal(AppointmentStatus.Confirmed, appointment.Status);
-    }
-
-    [Fact]
-    public void Book_FreeSlot_RegistersCreatedAndConfirmedEvents()
-    {
-        var (service, scheduleRepo, _, userRepo, _) = CreateSut();
-
-        var patientId = UserId.New();
-        var doctorId = UserId.New();
-        userRepo.Save(CreatePatient(patientId));
-        var (_, slot) = CreateScheduleWithSlot(scheduleRepo, doctorId, price: Money.Zero);
-
-        var appointment = service.Book(patientId, slot.Id);
-        var events = appointment.PopDomainEvents();
-
-        Assert.Contains(events, e => e is AppointmentCreated);
-        Assert.Contains(events, e => e is AppointmentConfirmed);
     }
 
     [Fact]

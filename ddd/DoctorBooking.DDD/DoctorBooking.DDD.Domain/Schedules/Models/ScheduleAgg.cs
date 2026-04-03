@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
 using DoctorBooking.DDD.Domain.Appointments;
 using DoctorBooking.DDD.Domain.Errors;
-using DoctorBooking.DDD.Domain.Schedules.Events;
 using DoctorBooking.DDD.Domain.Users;
 using Core.Common.Domain;
 
@@ -13,6 +12,12 @@ public sealed class ScheduleAgg : AggregateRoot<ScheduleId>
 
     public UserId DoctorId { get; private set; }
     public IReadOnlyList<TimeSlot> Slots => _slots.AsReadOnly();
+
+    // EF Core constructor
+    private ScheduleAgg() : base(default!)
+    {
+        DoctorId = default!;
+    }
 
     public ScheduleAgg(ScheduleId id, UserId doctorId) : base(id)
     {
@@ -26,8 +31,6 @@ public sealed class ScheduleAgg : AggregateRoot<ScheduleId>
 
         var slot = new TimeSlot(slotId, start, duration, price, DoctorId);
         _slots.Add(slot);
-
-        RegisterEvent(new ScheduleSlotAdded(Id, DoctorId, slotId, start, duration, price.Amount));
         return slot;
     }
 
@@ -37,7 +40,6 @@ public sealed class ScheduleAgg : AggregateRoot<ScheduleId>
             ?? throw new SlotNotFoundException(slotId);
 
         _slots.Remove(slot);
-        RegisterEvent(new ScheduleSlotRemoved(Id, slotId));
     }
 
     public TimeSlot? FindSlot(TimeSlotId slotId) => _slots.FirstOrDefault(s => s.Id == slotId);

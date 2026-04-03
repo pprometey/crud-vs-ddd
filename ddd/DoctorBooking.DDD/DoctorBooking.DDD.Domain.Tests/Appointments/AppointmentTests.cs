@@ -1,6 +1,5 @@
 using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Appointments;
-using DoctorBooking.DDD.Domain.Appointments.Events;
 using DoctorBooking.DDD.Domain.Schedules;
 using DoctorBooking.DDD.Domain.Users;
 using Xunit;
@@ -35,22 +34,13 @@ public class AppointmentTests
         Assert.Equal(AppointmentStatus.Planned, appt.Status);
     }
 
-    [Fact]
-    public void Constructor_RegistersAppointmentCreatedEvent()
-    {
-        var appt = CreatePlanned();
-        var events = appt.PopDomainEvents();
-        Assert.Single(events);
-        Assert.IsType<AppointmentCreated>(events[0]);
-    }
-
     // ── AddPayment ────────────────────────────────────────────────────────────
 
     [Fact]
     public void AddPayment_WhenPlanned_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(new Money(50), DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), new Money(50), DateTime.UtcNow);
 
         Assert.Equal(new Money(50), appt.PaidTotal());
         Assert.Equal(AppointmentStatus.Planned, appt.Status); // still planned (partial)
@@ -60,7 +50,7 @@ public class AppointmentTests
     public void AddPayment_FullAmount_TransitionsToConfirmed()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow);
 
         Assert.Equal(AppointmentStatus.Confirmed, appt.Status);
     }
@@ -69,10 +59,10 @@ public class AppointmentTests
     public void AddPayment_MultipleParts_ConfirmedWhenFull()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(new Money(60), DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), new Money(60), DateTime.UtcNow);
         Assert.Equal(AppointmentStatus.Planned, appt.Status);
 
-        appt.AddPayment(new Money(40), DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), new Money(40), DateTime.UtcNow);
         Assert.Equal(AppointmentStatus.Confirmed, appt.Status);
         Assert.Equal(new Money(100), appt.PaidTotal());
     }
@@ -82,17 +72,17 @@ public class AppointmentTests
     {
         var appt = CreatePlanned();
         Assert.Throws<DomainException>(() =>
-            appt.AddPayment(new Money(150), DateTime.UtcNow));
+            appt.AddPayment(PaymentId.New(), new Money(150), DateTime.UtcNow));
     }
 
     [Fact]
     public void AddPayment_WhenConfirmed_ThrowsInvalidOperation()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow); // → Confirmed
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow); // → Confirmed
 
-        Assert.Throws<InvalidOperationException>(() =>
-            appt.AddPayment(new Money(1), DateTime.UtcNow));
+        Assert.Throws<DomainException>(() =>
+            appt.AddPayment(PaymentId.New(), new Money(1), DateTime.UtcNow));
     }
 
     [Fact]
@@ -101,35 +91,8 @@ public class AppointmentTests
         var appt = CreatePlanned();
         appt.Cancel(PatientId, SlotStart.AddHours(-3));
 
-        Assert.Throws<InvalidOperationException>(() =>
-            appt.AddPayment(new Money(10), DateTime.UtcNow));
-    }
-
-    [Fact]
-    public void AddPayment_RegistersPaymentAddedEvent()
-    {
-        var appt = CreatePlanned();
-        appt.PopDomainEvents();
-
-        appt.AddPayment(new Money(50), DateTime.UtcNow);
-
-        var events = appt.PopDomainEvents();
-        Assert.Single(events);
-        Assert.IsType<PaymentAdded>(events[0]);
-    }
-
-    [Fact]
-    public void AddPayment_Full_RegistersPaymentAddedAndConfirmedEvents()
-    {
-        var appt = CreatePlanned();
-        appt.PopDomainEvents();
-
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
-
-        var events = appt.PopDomainEvents();
-        Assert.Equal(2, events.Count);
-        Assert.IsType<PaymentAdded>(events[0]);
-        Assert.IsType<AppointmentConfirmed>(events[1]);
+        Assert.Throws<DomainException>(() =>
+            appt.AddPayment(PaymentId.New(), new Money(10), DateTime.UtcNow));
     }
 
     // ── ConfirmFree ───────────────────────────────────────────────────────────
@@ -147,7 +110,7 @@ public class AppointmentTests
     public void ConfirmFree_NonZeroPrice_ThrowsInvalidOperation()
     {
         var appt = CreatePlanned();
-        Assert.Throws<InvalidOperationException>(() => appt.ConfirmFree());
+        Assert.Throws<DomainException>(() => appt.ConfirmFree());
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────
@@ -165,7 +128,7 @@ public class AppointmentTests
     public void Cancel_FromConfirmed_BeforeStart_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow);
         appt.Cancel(PatientId, SlotStart.AddHours(-3));
 
         Assert.Equal(AppointmentStatus.Cancelled, appt.Status);
@@ -180,67 +143,45 @@ public class AppointmentTests
     }
 
     [Fact]
-    public void Cancel_WithPaymentMoreThan2HoursBefore_ShouldRefundIsTrue()
+    public void Cancel_WithPaymentMoreThan2HoursBefore_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(new Money(50), DateTime.UtcNow);
-        appt.PopDomainEvents();
+        appt.AddPayment(PaymentId.New(), new Money(50), DateTime.UtcNow);
 
         appt.Cancel(PatientId, SlotStart.AddHours(-3));
 
-        var events = appt.PopDomainEvents();
-        var cancelled = Assert.IsType<AppointmentCancelled>(events[0]);
-        Assert.True(cancelled.ShouldRefund);
-        Assert.NotEmpty(cancelled.Payments);
+        Assert.Equal(AppointmentStatus.Cancelled, appt.Status);
     }
 
     [Fact]
-    public void Cancel_WithPaymentExactly2HoursBefore_ShouldRefundIsTrue()
+    public void Cancel_WithPaymentLessThan2HoursBefore_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(new Money(50), DateTime.UtcNow);
-        appt.PopDomainEvents();
-
-        appt.Cancel(PatientId, SlotStart.AddHours(-2));
-
-        var cancelled = Assert.IsType<AppointmentCancelled>(appt.PopDomainEvents()[0]);
-        Assert.True(cancelled.ShouldRefund);
-    }
-
-    [Fact]
-    public void Cancel_WithPaymentLessThan2HoursBefore_ShouldRefundIsFalse()
-    {
-        var appt = CreatePlanned();
-        appt.AddPayment(new Money(50), DateTime.UtcNow);
-        appt.PopDomainEvents();
+        appt.AddPayment(PaymentId.New(), new Money(50), DateTime.UtcNow);
 
         appt.Cancel(PatientId, SlotStart.AddMinutes(-119)); // 1h 59m before
 
-        var cancelled = Assert.IsType<AppointmentCancelled>(appt.PopDomainEvents()[0]);
-        Assert.False(cancelled.ShouldRefund);
+        Assert.Equal(AppointmentStatus.Cancelled, appt.Status);
     }
 
     [Fact]
-    public void Cancel_WithoutPayment_ShouldRefundIsFalse()
+    public void Cancel_WithoutPayment_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.PopDomainEvents();
 
         appt.Cancel(PatientId, SlotStart.AddHours(-5));
 
-        var cancelled = Assert.IsType<AppointmentCancelled>(appt.PopDomainEvents()[0]);
-        Assert.False(cancelled.ShouldRefund);
-        Assert.Empty(cancelled.Payments);
+        Assert.Equal(AppointmentStatus.Cancelled, appt.Status);
     }
 
     [Fact]
     public void Cancel_FromCompleted_ThrowsInvalidOperation()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow);
         appt.Complete();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<DomainException>(() =>
             appt.Cancel(PatientId, SlotStart.AddHours(-1)));
     }
 
@@ -250,21 +191,18 @@ public class AppointmentTests
     public void Complete_FromConfirmed_Succeeds()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
-        appt.PopDomainEvents();
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow);
 
         appt.Complete();
 
         Assert.Equal(AppointmentStatus.Completed, appt.Status);
-        var events = appt.PopDomainEvents();
-        Assert.IsType<AppointmentCompleted>(events[0]);
     }
 
     [Fact]
     public void Complete_FromPlanned_ThrowsInvalidOperation()
     {
         var appt = CreatePlanned();
-        Assert.Throws<InvalidOperationException>(() => appt.Complete());
+        Assert.Throws<DomainException>(() => appt.Complete());
     }
 
     [Fact]
@@ -273,7 +211,7 @@ public class AppointmentTests
         var appt = CreatePlanned();
         appt.Cancel(PatientId, SlotStart.AddHours(-1));
 
-        Assert.Throws<InvalidOperationException>(() => appt.Complete());
+        Assert.Throws<DomainException>(() => appt.Complete());
     }
 
     // ── MarkNoShow ────────────────────────────────────────────────────────────
@@ -282,21 +220,18 @@ public class AppointmentTests
     public void MarkNoShow_FromConfirmed_TransitionsToCancelled()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(SlotPrice, DateTime.UtcNow);
-        appt.PopDomainEvents();
+        appt.AddPayment(PaymentId.New(), SlotPrice, DateTime.UtcNow);
 
         appt.MarkNoShow();
 
         Assert.Equal(AppointmentStatus.Cancelled, appt.Status);
-        var events = appt.PopDomainEvents();
-        Assert.IsType<AppointmentNoShow>(events[0]);
     }
 
     [Fact]
     public void MarkNoShow_FromPlanned_ThrowsInvalidOperation()
     {
         var appt = CreatePlanned();
-        Assert.Throws<InvalidOperationException>(() => appt.MarkNoShow());
+        Assert.Throws<DomainException>(() => appt.MarkNoShow());
     }
 
     // ── RemainingBalance ──────────────────────────────────────────────────────
@@ -312,7 +247,7 @@ public class AppointmentTests
     public void RemainingBalance_PartialPayment_Correct()
     {
         var appt = CreatePlanned();
-        appt.AddPayment(new Money(30), DateTime.UtcNow);
+        appt.AddPayment(PaymentId.New(), new Money(30), DateTime.UtcNow);
         Assert.Equal(new Money(70), appt.RemainingBalance());
     }
 }

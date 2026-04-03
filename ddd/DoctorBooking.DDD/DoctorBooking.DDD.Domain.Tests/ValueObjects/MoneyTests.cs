@@ -1,3 +1,4 @@
+using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Appointments;
 using Xunit;
 
@@ -8,7 +9,7 @@ public class MoneyTests
     [Fact]
     public void Constructor_NegativeAmount_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new Money(-1));
+        Assert.Throws<DomainException>(() => new Money(-1));
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class MoneyTests
     [Fact]
     public void Subtraction_ResultWouldBeNegative_Throws()
     {
-        Assert.Throws<InvalidOperationException>(() => new Money(10) - new Money(20));
+        Assert.Throws<DomainException>(() => new Money(10) - new Money(20));
     }
 
     [Fact]

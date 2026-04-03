@@ -1,6 +1,5 @@
 using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Users;
-using DoctorBooking.DDD.Domain.Users.Events;
 using Xunit;
 
 namespace DoctorBooking.DDD.Domain.Tests.Users;
@@ -22,38 +21,22 @@ public class UserTests
     }
 
     [Fact]
-    public void NewUser_RegistersUserRegisteredEvent()
+    public void AddRole_NewRole_AddsRole()
     {
         var user = CreatePatient();
-        var events = user.PopDomainEvents();
-        Assert.Single(events);
-        Assert.IsType<UserRegistered>(events[0]);
-    }
-
-    [Fact]
-    public void AddRole_NewRole_AddsAndRegistersEvent()
-    {
-        var user = CreatePatient();
-        user.PopDomainEvents(); // clear initial
 
         user.AddRole(UserRole.Doctor);
 
         Assert.True(user.HasRole(UserRole.Doctor));
-        var events = user.PopDomainEvents();
-        Assert.Single(events);
-        var e = Assert.IsType<UserRoleAdded>(events[0]);
-        Assert.Equal(UserRole.Doctor, e.Role);
     }
 
     [Fact]
     public void AddRole_AlreadyExists_Idempotent()
     {
         var user = CreatePatient();
-        user.PopDomainEvents();
 
         user.AddRole(UserRole.Patient); // already has it
 
-        Assert.Empty(user.PopDomainEvents());
         Assert.Single(user.Roles); // still just one role
     }
 
@@ -62,14 +45,10 @@ public class UserTests
     {
         var user = CreatePatient();
         user.AddRole(UserRole.Doctor);
-        user.PopDomainEvents();
 
         user.RemoveRole(UserRole.Doctor);
 
         Assert.False(user.HasRole(UserRole.Doctor));
-        var events = user.PopDomainEvents();
-        var e = Assert.IsType<UserRoleRemoved>(events[0]);
-        Assert.Equal(UserRole.Doctor, e.Role);
     }
 
     [Fact]

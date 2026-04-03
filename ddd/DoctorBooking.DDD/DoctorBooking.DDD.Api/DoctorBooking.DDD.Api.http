@@ -1,6 +1,275 @@
-@Api_HostAddress = http://localhost:5483
+###############################################################################
+### DoctorBooking DDD API - HTTP Examples
+###############################################################################
+###
+### API Documentation: http://localhost:5483/scalar/v1
+### OpenAPI Spec: http://localhost:5483/openapi/v1.json
+###
+### How to use:
+###   1. Execute requests sequentially from top to bottom
+###   2. Responses are automatically captured using @name directive
+###   3. Use {{requestName.response.body.$.propertyName}} to reference captured values
+###   4. Example: {{registerPatient1.response.body.$.id}} gets ID from first patient registration
+###
+### API Versioning:
+###   - URL Segment (recommended): /api/v1/...
+###   - Query String: /api/v1/...?api-version=1.0
+###   - Header: X-Api-Version: 1.0
+###
+### Pagination:
+###   - Cursor-based pagination for all list endpoints
+###   - Query params: pageSize, cursor, sortBy, direction (asc/desc)
+###   - Supported sortBy fields: firstName, lastName, email, created_at
+###   - Default pageSize: 25, Max pageSize: 100
+###
+### Date/Time Format:
+###   - ISO 8601 with UTC timezone: "2026-04-02T10:30:00Z"
+###
+### Valid User Roles:
+###   - Patient, Doctor, Admin
+###
+###############################################################################
 
-GET {{Api_HostAddress}}/api/weatherforecast/
-Accept: application/json
+@baseUrl = http://localhost:5483
+@apiVersion = v1
+
+### ======================
+### USERS API
+### ======================
+
+# @name registerPatient1
+POST {{baseUrl}}/api/{{apiVersion}}/users
+Content-Type: application/json
+
+{
+  "email": "alice.brown@example.com",
+  "firstName": "Alice",
+  "lastName": "Brown",
+  "role": "Patient"
+}
+
+###
+
+# @name registerPatient2
+POST {{baseUrl}}/api/{{apiVersion}}/users
+Content-Type: application/json
+
+{
+  "email": "john.smith@example.com",
+  "firstName": "John",
+  "lastName": "Smith",
+  "role": "Patient"
+}
+
+###
+
+# @name registerDoctor
+POST {{baseUrl}}/api/{{apiVersion}}/users
+Content-Type: application/json
+
+{
+  "email": "doctor.jones@example.com",
+  "firstName": "Sarah",
+  "lastName": "Jones",
+  "role": "Doctor"
+}
+
+###
+
+# Get users (paginated with cursor-based pagination, default sort by created_at desc)
+GET {{baseUrl}}/api/{{apiVersion}}/users
+
+###
+
+# Get users sorted by firstName ascending
+GET {{baseUrl}}/api/{{apiVersion}}/users?sortBy=firstName&direction=asc&pageSize=50
+
+###
+
+# Get users sorted by lastName descending
+GET {{baseUrl}}/api/{{apiVersion}}/users?sortBy=lastName&direction=desc&pageSize=25
+
+###
+
+# Get users sorted by email
+GET {{baseUrl}}/api/{{apiVersion}}/users?sortBy=email&direction=asc
+
+###
+
+# Get user by ID (using captured response from registration)
+GET {{baseUrl}}/api/{{apiVersion}}/users/{{registerPatient1.response.body.$.id}}
+
+###
+
+# Get user by email
+GET {{baseUrl}}/api/{{apiVersion}}/users/by-email/john.smith@example.com
+
+###
+
+# Add Doctor role to patient (using captured ID)
+POST {{baseUrl}}/api/{{apiVersion}}/users/{{registerPatient1.response.body.$.id}}/roles
+Content-Type: application/json
+
+{
+  "role": "Doctor"
+}
+
+###
+
+# Remove Patient role from user
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/{{registerPatient1.response.body.$.id}}/roles/Patient
+
+###
+
+### ======================
+### SCHEDULES API
+### ======================
+
+# @name createSchedule
+POST {{baseUrl}}/api/{{apiVersion}}/schedules
+Content-Type: application/json
+
+{
+  "doctorId": "{{registerDoctor.response.body.$.id}}"
+}
+
+###
+
+# Get schedule by doctor ID
+GET {{baseUrl}}/api/{{apiVersion}}/schedules/by-doctor/{{registerDoctor.response.body.$.id}}
+
+###
+
+# @name addSlot1
+POST {{baseUrl}}/api/{{apiVersion}}/schedules/slots
+Content-Type: application/json
+
+{
+  "doctorId": "{{registerDoctor.response.body.$.id}}",
+  "start": "2026-04-15T14:00:00Z",
+  "duration": "00:30:00",
+  "price": 1500.00
+}
+
+###
+
+# @name addSlot2
+POST {{baseUrl}}/api/{{apiVersion}}/schedules/slots
+Content-Type: application/json
+
+{
+  "doctorId": "{{registerDoctor.response.body.$.id}}",
+  "start": "2026-04-15T15:00:00Z",
+  "duration": "01:00:00",
+  "price": 2500.00
+}
+
+###
+
+# Get time slot by ID
+GET {{baseUrl}}/api/{{apiVersion}}/schedules/slots/{{addSlot1.response.body.$.id}}
+
+###
+
+### ======================
+### APPOINTMENTS API
+### ======================
+
+# @name bookAppointment
+POST {{baseUrl}}/api/{{apiVersion}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": "{{registerPatient1.response.body.$.id}}",
+  "slotId": "{{addSlot1.response.body.$.id}}"
+}
+
+###
+
+# @name bookAppointment2
+POST {{baseUrl}}/api/{{apiVersion}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": "{{registerPatient2.response.body.$.id}}",
+  "slotId": "{{addSlot2.response.body.$.id}}"
+}
+
+###
+
+# Get appointment by ID
+GET {{baseUrl}}/api/{{apiVersion}}/appointments/{{bookAppointment.response.body.$.id}}
+
+###
+
+# Get appointments for doctor (sorted by slot start time ascending)
+GET {{baseUrl}}/api/{{apiVersion}}/appointments/by-doctor/{{registerDoctor.response.body.$.id}}?sortBy=slot_start&direction=asc&pageSize=25
+
+###
+
+# Get appointments for first patient (sorted by created date descending)
+GET {{baseUrl}}/api/{{apiVersion}}/appointments/by-patient/{{registerPatient1.response.body.$.id}}?sortBy=created_at&direction=desc&pageSize=25
+
+###
+
+# Get appointments for second patient
+GET {{baseUrl}}/api/{{apiVersion}}/appointments/by-patient/{{registerPatient2.response.body.$.id}}?sortBy=created_at&direction=desc&pageSize=25
+
+###
+
+# @name addPayment
+POST {{baseUrl}}/api/{{apiVersion}}/appointments/{{bookAppointment.response.body.$.id}}/payments
+Content-Type: application/json
+
+{
+  "amount": 1500.00,
+  "paidAt": "2026-04-02T10:30:00Z"
+}
+
+###
+
+# Cancel appointment
+POST {{baseUrl}}/api/{{apiVersion}}/appointments/{{bookAppointment.response.body.$.id}}/cancel
+Content-Type: application/json
+
+{
+  "cancelledById": "{{registerPatient1.response.body.$.id}}"
+}
+
+###
+
+# Complete appointment (doctor marks as completed after visit)
+POST {{baseUrl}}/api/{{apiVersion}}/appointments/{{bookAppointment.response.body.$.id}}/complete
+
+###
+
+# Mark appointment as no-show (patient didn't arrive)
+POST {{baseUrl}}/api/{{apiVersion}}/appointments/{{bookAppointment.response.body.$.id}}/no-show
+
+###
+
+# Remove time slot from schedule
+DELETE {{baseUrl}}/api/{{apiVersion}}/schedules/slots
+Content-Type: application/json
+
+{
+  "doctorId": "{{registerDoctor.response.body.$.id}}",
+  "slotId": "{{addSlot2.response.body.$.id}}"
+}
+
+###
+
+### ======================
+### API VERSION TESTING
+### ======================
+
+# Test API version in header (alternative to URL-based versioning)
+GET {{baseUrl}}/api/v1/users
+X-Api-Version: 1.0
+
+###
+
+# Test API version in query string (alternative to URL-based versioning)
+GET {{baseUrl}}/api/v1/users?api-version=1.0
 
 ###

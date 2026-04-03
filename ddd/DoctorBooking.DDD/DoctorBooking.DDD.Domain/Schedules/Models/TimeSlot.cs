@@ -13,6 +13,13 @@ public sealed class TimeSlot : Entity<TimeSlotId>
 
     public DateTime End => Start + Duration;
 
+    // EF Core constructor
+    private TimeSlot() : base(default!)
+    {
+        Price = default!;
+        DoctorId = default!;
+    }
+
     public TimeSlot(TimeSlotId id, DateTime start, TimeSpan duration, Money price, UserId doctorId)
         : base(id)
     {

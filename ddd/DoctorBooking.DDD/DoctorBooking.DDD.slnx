@@ -1,11 +1,28 @@
 <Solution>
-  <Project Path="Core.Common.Domain/Core.Common.Domain.csproj" />
-  <Project Path="Core.Common.Application/Core.Common.Application.csproj" />
-  <Project Path="Core.Common.Infrastructure/Core.Common.Infrastructure.csproj" />
-  <Project Path="DoctorBooking.DDD.Domain/DoctorBooking.DDD.Domain.csproj" />
-  <Project Path="DoctorBooking.DDD.Domain.Tests/DoctorBooking.DDD.Domain.Tests.csproj" />
-  <Project Path="DoctorBooking.DDD.AppHost/DoctorBooking.DDD.AppHost.csproj" />
-  <Project Path="DoctorBooking.DDD.Api/DoctorBooking.DDD.Api.csproj" />
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/application/">
+    <Project Path="DoctorBooking.DDD.Application.Tests/DoctorBooking.DDD.Application.Tests.csproj" />
+    <Project Path="DoctorBooking.DDD.Application/DoctorBooking.DDD.Application.csproj" />
+  </Folder>
+  <Folder Name="/backend/common/">
+    <Project Path="Core.Common.Application/Core.Common.Application.csproj" />
+    <Project Path="Core.Common.Domain/Core.Common.Domain.csproj" />
+    <Project Path="Core.Common.Infrastructure/Core.Common.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/backend/domain/">
+    <Project Path="DoctorBooking.DDD.Domain.Tests/DoctorBooking.DDD.Domain.Tests.csproj" />
+    <Project Path="DoctorBooking.DDD.Domain/DoctorBooking.DDD.Domain.csproj" />
+  </Folder>
+  <Folder Name="/backend/host/">
+    <Project Path="DoctorBooking.DDD.Api/DoctorBooking.DDD.Api.csproj" />
+    <Project Path="DoctorBooking.DDD.AppHost/DoctorBooking.DDD.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/backend/infrastructure/">
+    <Project Path="DoctorBooking.DDD.Infrastructure.Mapped.Tests/DoctorBooking.DDD.Infrastructure.Mapped.Tests.csproj" />
+    <Project Path="DoctorBooking.DDD.Infrastructure.Mapped/DoctorBooking.DDD.Infrastructure.Mapped.csproj" />
+    <Project Path="DoctorBooking.DDD.Infrastructure.Tests/DoctorBooking.DDD.Infrastructure.Tests.csproj" />
+    <Project Path="DoctorBooking.DDD.Infrastructure/DoctorBooking.DDD.Infrastructure.csproj" />
+  </Folder>
   <Project Path="frontend/frontend.esproj">
     <Build />
     <Deploy />

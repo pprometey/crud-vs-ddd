@@ -1,7 +1,6 @@
 using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Appointments;
 using DoctorBooking.DDD.Domain.Schedules;
-using DoctorBooking.DDD.Domain.Schedules.Events;
 using DoctorBooking.DDD.Domain.Tests.Fakes;
 using DoctorBooking.DDD.Domain.Users;
 using Xunit;
@@ -80,30 +79,15 @@ public class ScheduleTests
     }
 
     [Fact]
-    public void AddSlot_RegistersScheduleSlotAddedEvent()
-    {
-        var schedule = CreateSchedule();
-        schedule.AddSlot(TimeSlotId.New(), Now.AddDays(1), OneHour, Price, Now);
-
-        var events = schedule.PopDomainEvents();
-        Assert.Single(events);
-        Assert.IsType<ScheduleSlotAdded>(events[0]);
-    }
-
-    [Fact]
     public void RemoveSlot_ExistingSlot_RemovesIt()
     {
         var schedule = CreateSchedule();
         var slotId = TimeSlotId.New();
         schedule.AddSlot(slotId, Now.AddDays(1), OneHour, Price, Now);
-        schedule.PopDomainEvents();
 
         schedule.RemoveSlot(slotId);
 
         Assert.Empty(schedule.Slots);
-        var events = schedule.PopDomainEvents();
-        Assert.Single(events);
-        Assert.IsType<ScheduleSlotRemoved>(events[0]);
     }
 
     [Fact]

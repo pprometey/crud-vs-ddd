@@ -1,5 +1,4 @@
 using Ardalis.GuardClauses;
-using DoctorBooking.DDD.Domain.Appointments.Events;
 using DoctorBooking.DDD.Domain.Errors;
 using DoctorBooking.DDD.Domain.Schedules;
 using DoctorBooking.DDD.Domain.Users;
@@ -20,6 +19,15 @@ public sealed class AppointmentAgg : AggregateRoot<AppointmentId>
 
     public IReadOnlyList<Payment> Payments => _payments.AsReadOnly();
 
+    // EF Core constructor
+    private AppointmentAgg() : base(default!)
+    {
+        SlotId = default!;
+        PatientId = default!;
+        DoctorId = default!;
+        SlotPrice = default!;
+    }
+
     public AppointmentAgg(
         AppointmentId id,
         TimeSlotId slotId,
@@ -36,26 +44,24 @@ public sealed class AppointmentAgg : AggregateRoot<AppointmentId>
         SlotStart = slotStart;
         SlotPrice = slotPrice;
         Status = AppointmentStatus.Planned;
-
-        RegisterEvent(new AppointmentCreated(id, patientId, doctorId, slotId));
     }
 
-    public void AddPayment(Money amount, DateTime paidAt)
+    public Payment AddPayment(PaymentId paymentId, Money amount, DateTime paidAt)
     {
         Guard.Against.PaymentNotAllowedInStatus(Status);
 
         var newTotal = PaidTotal() + amount;
         Guard.Against.PaymentExceedsSlotPrice(newTotal, SlotPrice, RemainingBalance());
 
-        var payment = new Payment(PaymentId.New(), amount, paidAt);
+        var payment = new Payment(paymentId, amount, paidAt);
         _payments.Add(payment);
-        RegisterEvent(new PaymentAdded(Id, payment.Id, amount, paidAt));
 
         if (newTotal == SlotPrice)
         {
             Status = AppointmentStatus.Confirmed;
-            RegisterEvent(new AppointmentConfirmed(Id, PatientId, DoctorId));
         }
+
+        return payment;
     }
 
     public void ConfirmFree()
@@ -64,33 +70,34 @@ public sealed class AppointmentAgg : AggregateRoot<AppointmentId>
         Guard.Against.FreeConfirmWrongStatus(Status);
 
         Status = AppointmentStatus.Confirmed;
-        RegisterEvent(new AppointmentConfirmed(Id, PatientId, DoctorId));
     }
 
     public void Cancel(UserId cancelledBy, DateTime now)
     {
         Guard.Against.AppointmentNotCancellable(Status);
         Guard.Against.AppointmentAlreadyStarted(now, SlotStart);
-
-        var shouldRefund = _payments.Count > 0 && now <= SlotStart.AddHours(-2);
         Status = AppointmentStatus.Cancelled;
-        RegisterEvent(new AppointmentCancelled(Id, cancelledBy, shouldRefund, _payments.ToList()));
+    }
+
+    public bool ShouldRefund(DateTime now)
+    {
+        if (_payments.Count == 0)
+            return false;
+            
+        var timeUntilAppointment = SlotStart - now;
+        return timeUntilAppointment.TotalHours > 2;
     }
 
     public void Complete()
     {
         Guard.Against.NotConfirmedForComplete(Status);
-
         Status = AppointmentStatus.Completed;
-        RegisterEvent(new AppointmentCompleted(Id, DoctorId));
     }
 
     public void MarkNoShow()
     {
         Guard.Against.NotConfirmedForNoShow(Status);
-
         Status = AppointmentStatus.Cancelled;
-        RegisterEvent(new AppointmentNoShow(Id, PatientId));
     }
 
     public Money PaidTotal() => _payments.Aggregate(Money.Zero, (acc, p) => acc + p.Amount);

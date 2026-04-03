@@ -10,6 +10,12 @@ public sealed class Payment : Entity<PaymentId>
     public DateTime PaidAt { get; private set; }
     public PaymentStatus Status { get; private set; }
 
+    // EF Core constructor
+    private Payment() : base(default!)
+    {
+        Amount = default!;
+    }
+
     public Payment(PaymentId id, Money amount, DateTime paidAt) : base(id)
     {
         Guard.Against.ZeroPaymentAmount(amount.Amount);

@@ -2,5 +2,9 @@
   <PropertyGroup>
     <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
     <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <!-- Отключаем NuGet restore и .NET framework для JavaScript проекта -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <RestoreProjectStyle>Unknown</RestoreProjectStyle>
   </PropertyGroup>
 </Project>

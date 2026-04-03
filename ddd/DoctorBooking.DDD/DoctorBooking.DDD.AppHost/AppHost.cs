@@ -10,4 +10,4 @@ var webfrontend = builder.AddViteApp("webfrontend", "../frontend")
 
 api.PublishWithContainerFiles(webfrontend, "wwwroot");
 
-builder.Build().Run();
+await builder.Build().RunAsync();

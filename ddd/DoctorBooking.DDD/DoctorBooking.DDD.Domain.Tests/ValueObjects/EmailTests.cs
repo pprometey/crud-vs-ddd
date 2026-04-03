@@ -1,3 +1,4 @@
+using Core.Common.Domain;
 using DoctorBooking.DDD.Domain.Users;
 using Xunit;
 
@@ -27,7 +28,7 @@ public class EmailTests
     [InlineData("   ")]
     public void Constructor_EmptyOrWhitespace_Throws(string input)
     {
-        Assert.Throws<ArgumentException>(() => new Email(input));
+        Assert.Throws<DomainException>(() => new Email(input));
     }
 
     [Theory]
@@ -37,7 +38,7 @@ public class EmailTests
     [InlineData("double@@at.com")]
     public void Constructor_InvalidFormat_Throws(string input)
     {
-        Assert.Throws<ArgumentException>(() => new Email(input));
+        Assert.Throws<DomainException>(() => new Email(input));
     }
 
     [Fact]

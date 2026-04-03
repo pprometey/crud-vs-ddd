@@ -1,6 +1,5 @@
 using DoctorBooking.DDD.Domain.Appointments;
 using DoctorBooking.DDD.Domain.Schedules;
-using DoctorBooking.DDD.Domain.Users;
 
 namespace DoctorBooking.DDD.Domain.Appointments;
 
@@ -13,9 +12,6 @@ public interface IAppointmentRepository
 
     /// <summary>Returns all non-final (PLANNED or CONFIRMED) appointments for a slot.</summary>
     IReadOnlyList<AppointmentAgg> FindActiveBySlot(TimeSlotId slotId);
-
-    IReadOnlyList<AppointmentAgg> FindByPatient(UserId patientId);
-    IReadOnlyList<AppointmentAgg> FindByDoctor(UserId doctorId);
 
     void Save(AppointmentAgg appointment);
 }
